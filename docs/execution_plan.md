@@ -479,10 +479,19 @@ Install plugin, enable it, configure parameters, run Verify & Acknowledge, confi
 
 ## Success Criteria
 
-- [ ] All 4 applicable event rendering paths hide configured sections from guests (attending.php has no target classes — no stripping expected)
+- [ ] All 4 applicable event rendering paths hide configured sections from guests (attending.php has no target classes - no stripping expected)
 - [ ] Logged-in users see all event details as before
 - [ ] Plugin survives a CB GroupJive test update without intervention
 - [ ] Plugin configurable via Joomla admin (Extensions > Plugins)
 - [ ] Admin sees a warning after CB version change until verification is re-run
 - [ ] Verify & Acknowledge button correctly reports CSS class presence/absence
 - [ ] First-time install prompts for verification
+
+## Implementation Status (2026-02-16)
+
+- [x] Step 1 implemented: plugin files scaffolded (`cbgjvisibility.xml`, `services/`, `src/`, language files).
+- [x] Step 2 implemented: `onAfterRender` guest stripping with admin-first branching, marker fast-path, selector params, and nesting-aware description removal.
+- [x] Step 3 implemented: version mismatch warning and `onAjaxCbgjvisibility` verification endpoint with admin/ACL/CSRF checks and verified-version persistence.
+- [x] Step 4 partially implemented in code only: compatibility UI and verification transport are in place; runtime verification against live site remains pending.
+- [x] Step 5 implemented: `Makefile`, update XML, and packaging paths added.
+- [ ] Step 6 intentionally not executed: DDEV installation/configuration/functional environment checks were skipped because test environment is unavailable.

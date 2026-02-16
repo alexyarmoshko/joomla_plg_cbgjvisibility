@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade">
+    <name>PLG_SYSTEM_CBGJVISIBILITY</name>
+    <author>Yak Shaver</author>
+    <creationDate>2026-02</creationDate>
+    <copyright>(C) 2026 Yak Shaver https://www.kayakshaver.com</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <authorEmail>me@kayakshaver.com</authorEmail>
+    <version>0.1.0</version>
+    <description>PLG_SYSTEM_CBGJVISIBILITY_XML_DESCRIPTION</description>
+    <namespace path="src">YakShaver\Plugin\System\Cbgjvisibility</namespace>
+    <files>
+        <folder plugin="cbgjvisibility">services</folder>
+        <folder>src</folder>
+        <folder>language</folder>
+    </files>
+    <languages>
+        <language tag="en-GB">language/en-GB/plg_system_cbgjvisibility.ini</language>
+        <language tag="en-GB">language/en-GB/plg_system_cbgjvisibility.sys.ini</language>
+    </languages>
+    <config>
+        <fields name="params" addfieldprefix="YakShaver\Plugin\System\Cbgjvisibility\Field">
+            <fieldset name="general" label="PLG_SYSTEM_CBGJVISIBILITY_FIELDSET_GENERAL">
+                <field
+                    name="hide_host"
+                    type="radio"
+                    label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_HIDE_HOST_LABEL"
+                    description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_HIDE_HOST_DESC"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field
+                    name="hide_group"
+                    type="radio"
+                    label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_HIDE_GROUP_LABEL"
+                    description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_HIDE_GROUP_DESC"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field
+                    name="hide_guests"
+                    type="radio"
+                    label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_HIDE_GUESTS_LABEL"
+                    description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_HIDE_GUESTS_DESC"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field
+                    name="hide_description"
+                    type="radio"
+                    label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_HIDE_DESCRIPTION_LABEL"
+                    description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_HIDE_DESCRIPTION_DESC"
+                    default="0"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+            <fieldset name="selectors" label="PLG_SYSTEM_CBGJVISIBILITY_FIELDSET_SELECTORS">
+                <field name="marker_string" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_MARKER_STRING_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_MARKER_STRING_DESC" default="gjGroupEvent" />
+                <field name="element_host" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_ELEMENT_HOST_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_ELEMENT_HOST_DESC" default="div" />
+                <field name="class_host" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_CLASS_HOST_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_CLASS_HOST_DESC" default="gjGroupEventHost" />
+                <field name="element_group" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_ELEMENT_GROUP_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_ELEMENT_GROUP_DESC" default="div" />
+                <field name="class_group" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_CLASS_GROUP_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_CLASS_GROUP_DESC" default="gjGroupEventGroup" />
+                <field name="element_guests" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_ELEMENT_GUESTS_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_ELEMENT_GUESTS_DESC" default="div" />
+                <field name="class_guests" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_CLASS_GUESTS_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_CLASS_GUESTS_DESC" default="gjGroupEventGuests" />
+                <field name="element_description" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_ELEMENT_DESCRIPTION_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_ELEMENT_DESCRIPTION_DESC" default="div" />
+                <field name="class_description" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_CLASS_DESCRIPTION_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_CLASS_DESCRIPTION_DESC" default="gjGroupEventDescription" />
+            </fieldset>
+            <fieldset name="compatibility" label="PLG_SYSTEM_CBGJVISIBILITY_FIELDSET_COMPATIBILITY">
+                <field
+                    name="compatibility_note"
+                    type="note"
+                    label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_COMPATIBILITY_NOTE_LABEL"
+                    description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_COMPATIBILITY_NOTE_DESC"
+                    class="alert alert-info"
+                />
+                <field
+                    name="verify_button"
+                    type="Verify"
+                    label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_VERIFY_LABEL"
+                />
+                <field name="verified_cbgroupjive_version" type="hidden" default="" />
+                <field name="verified_cbgroupjiveevents_version" type="hidden" default="" />
+                <field name="verified_cbactivity_version" type="hidden" default="" />
+            </fieldset>
+        </fields>
+    </config>
+</extension>
