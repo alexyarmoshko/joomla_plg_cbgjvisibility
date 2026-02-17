@@ -35,6 +35,21 @@
     - blocks saving verified snapshots when any tracked version remains unavailable.
   - Fixed form overwrite issue: after successful Verify, JS now writes resolved versions into hidden params inputs so a subsequent Joomla "Save" does not clear verified versions.
 
+## 2026-02-16 (v0.2.0)
+
+- Removed compatibility verification system (~50% of codebase):
+  - Deleted `src/Field/VerifyField.php` (337 lines).
+  - Removed 12 methods, 4 constants, and admin warning logic from `Cbgjvisibility.php`.
+  - Removed Compatibility tab (3 hidden fields, verify button, version table) from manifest.
+  - Removed 28 language strings related to verification/compatibility.
+- Replaced with live sanitization testing:
+  - New AJAX endpoint (`onAjaxCbgjvisibility`) fetches front page as guest, checks marker presence and CSS class absence.
+  - New `src/Field/SanitizationTestField.php` — simple button + result display (~95 lines).
+  - New Testing tab in plugin settings.
+- Added 12 new language strings for testing UI.
+- Updated README, execution plan, and CLAUDE.md.
+- Bumped version to 0.2.0.
+
 ## Deferred
 
 - Environment-backed functional validation (DDEV/site checks, end-to-end guest/admin behavior) was intentionally skipped per user request because test environment is not available.

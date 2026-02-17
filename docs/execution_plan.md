@@ -79,10 +79,8 @@ plg_cbgjvisibility/
   - `element_description` (text, default: `div`) — HTML element wrapping event description
   - `class_description` (text, default: `gjGroupEventDescription`) — CSS class of description wrapper
   - `marker_string` (text, default: `gjGroupEvent`) — Quick-check marker string for `strpos` early exit; should be a common substring of all target class names
-- Parameters (Compatibility tab):
-  - `verified_cbgroupjive_version` (hidden text) — Last CB GroupJive version verified by admin
-  - `verified_cbgroupjiveevents_version` (hidden text) — Last CB GroupJive Events version verified by admin
-  - `verified_cbactivity_version` (hidden text) — Last CB Activity version verified by admin
+- Parameters (Testing tab):
+  - "Test Sanitization" button — fetches front page as guest and checks CSS class absence
 
 ### Joomla Event Contract
 
@@ -91,18 +89,13 @@ The plugin subscribes to the following Joomla events (using Joomla 5 event subsc
 | Event | Handler | Context | Purpose |
 | --- | --- | --- | --- |
 | `onAfterRender` | `onAfterRender()` | Site (guest) | Strip configured HTML blocks from response body |
-| `onAfterRender` | `onAfterRender()` | Admin | Check installed CB versions vs verified versions; enqueue warning if mismatch |
-| `onAjaxCbgjvisibility` | `onAjaxCbgjvisibility()` | Admin | AJAX endpoint for Verify & Acknowledge button |
+| `onAjaxCbgjvisibility` | `onAjaxCbgjvisibility()` | Admin | AJAX endpoint for sanitization test button |
 
 ### Plugin Class (Cbgjvisibility.php)
 
 #### `onAfterRender()`
 
 ```text
-if admin client:
-    run version-check/warning logic (compare installed vs verified versions)
-    return
-
 if not site client:
     return
 
@@ -125,13 +118,12 @@ setBody(body)
 
 Flow details:
 
-1. **Admin branch** (runs first): If admin client, check installed CB versions against verified versions via DB query; if mismatch, `enqueueMessage` with warning. Return immediately — no HTML stripping in admin.
-2. **Site client guard**: Early exit if not site client (e.g., API, CLI).
-3. **Guest guard**: Early exit if user is logged in (`!$this->getApplication()->getIdentity()->guest`).
-4. **Content-Type guard**: Early exit if response is not HTML.
-5. **Marker guard**: Early exit if `strpos($body, $markerString) === false` — `$markerString` read from `marker_string` param (default: `gjGroupEvent`).
-6. **Strip**: For each enabled parameter, run regex/nesting-aware replacement to remove the corresponding HTML block.
-7. **Commit**: `setBody($body)`.
+1. **Site client guard**: Early exit if not site client (e.g., API, CLI, admin).
+2. **Guest guard**: Early exit if user is logged in (`!$this->getApplication()->getIdentity()->guest`).
+3. **Content-Type guard**: Early exit if response is not HTML.
+4. **Marker guard**: Early exit if `strpos($body, $markerString) === false` — `$markerString` read from `marker_string` param (default: `gjGroupEvent`).
+5. **Strip**: For each enabled parameter, run regex/nesting-aware replacement to remove the corresponding HTML block.
+6. **Commit**: `setBody($body)`.
 
 #### Regex Patterns
 
@@ -148,117 +140,18 @@ The `s` (DOTALL) flag handles multi-line content. The element tag and class name
 
 For `gjGroupEventDescription`, the content includes nested divs (cbMoreLess), so a nesting-aware PHP function is used instead of regex: find the opening tag, count element nesting depth, and find the matching closing tag. This is more robust than regex for nested elements and works regardless of the configured element type.
 
-### Compatibility Self-Check
+### Sanitization Testing (v0.2.0)
 
-The plugin's main risk is silent failure if CB changes the CSS class names it targets. To mitigate this, the plugin includes a built-in compatibility verification system.
+> **Note**: The compatibility verification system (version tracking, template file scanning, admin warnings) was removed in v0.2.0. It was replaced with a simpler live sanitization test that checks actual rendered output.
 
-#### How It Works
+The plugin's Testing tab provides a "Test Sanitization" button that:
 
-1. **Version tracking**: The plugin stores the last verified versions in hidden params `verified_cbgroupjive_version`, `verified_cbgroupjiveevents_version`, and `verified_cbactivity_version`.
+1. Fetches the site's front page as a guest (HTTP request with no cookies)
+2. Checks for the marker string — confirms event data is present on the page
+3. Checks that each enabled hidden CSS class is absent from the HTML
+4. Returns per-class PASS/FAIL results
 
-2. **Installed version detection**: On each admin page load (via `onAfterRender` in admin context), the plugin queries `#__comprofiler_plugin` for the currently installed versions of all three relevant plugins:
-
-   ```sql
-   SELECT element, version FROM #__comprofiler_plugin
-   WHERE element IN ('cbgroupjive', 'cbgroupjiveevents', 'cbactivity')
-   ```
-
-   `cbgroupjiveevents` is tracked separately because it owns 4 of the 5 target template files and has its own version number, even though it's distributed as part of the `cbgroupjive` package.
-
-3. **Mismatch warning**: If any installed version differs from its last verified version, the plugin injects a Joomla system message (via `enqueueMessage`) on admin pages:
-   > "GJ Visibility: CB GroupJive Events has been updated to 2.9.11 (verified: 2.9.10). Please verify that guest visibility rules still work and acknowledge the new version in plugin settings."
-
-4. **Verify button**: The plugin's configuration (Compatibility tab) shows:
-   - Current installed CB GroupJive / CB GroupJive Events / CB Activity versions (read-only display)
-   - Last verified versions for each
-   - A custom "Verify & Acknowledge" button that:
-     - Scans all 5 CB template source files for the target CSS class strings
-     - Reports per-file, per-class results (found/missing)
-     - If all expected classes are present in their respective files, updates `verified_cbgroupjive_version` / `verified_cbgroupjiveevents_version` / `verified_cbactivity_version` to the current installed versions and shows a success message
-     - If any classes are missing, shows a warning identifying which file(s) and class(es) changed
-
-5. **First-run**: On initial install, all `verified_*_version` params are empty, which triggers the verification prompt immediately so the admin must confirm it works.
-
-#### Security
-
-The AJAX verification endpoint (`onAjaxCbgjvisibility`) must enforce:
-
-- **Admin client only**: Early exit if `!$this->getApplication()->isClient('administrator')`
-- **ACL check**: Require `core.manage` permission on `com_plugins` (`$this->getApplication()->getIdentity()->authorise('core.manage', 'com_plugins')`)
-- **CSRF token validation**: Validate via `Session::checkToken('get')` or `Session::checkToken('post')` — the Verify button JS must include the token in the request
-- **Error handling**: Return structured JSON error responses (not exceptions) for missing files, permission failures, etc.
-
-#### Implementation Details
-
-The verification logic lives in an AJAX endpoint handled by the plugin:
-
-- Register a custom `onAjax` handler (`onAjaxCbgjvisibility`)
-- The "Verify" button in plugin settings calls this via `index.php?option=com_ajax&plugin=cbgjvisibility&group=system&format=json&[token]=1`
-- The handler:
-  1. Resolves the absolute paths to all 5 template files using `JPATH_SITE . '/components/com_comprofiler/plugin/user/...'`
-  2. For each file, reads its contents with `file_get_contents()` and searches for each target CSS class string (read from Selectors params: `class_host`, `class_group`, `class_guests`, `class_description`)
-  3. Returns JSON result:
-
-     ```json
-     {
-       "files": {
-         "events.php": { "found": ["gjGroupEventHost", "gjGroupEventGuests"], "missing": [] },
-         "module.php": { "found": [...], "missing": [...] },
-         ...
-       },
-       "all_ok": true,
-       "cbgroupjive_version": "2.9.10",
-       "cbgroupjiveevents_version": "2.9.10",
-       "cbactivity_version": "3.0.2"
-     }
-     ```
-
-  4. Also checks whether the file exists at all (CB plugin may have been uninstalled or relocated)
-- The button's JavaScript displays the result and, if `all_ok`, triggers a save of the verified versions
-
-#### Template File Map
-
-The plugin maintains a constant map of template paths and which **selector keys** each should contain. The actual class names are resolved at runtime from the Selectors tab params (`class_host`, `class_group`, etc.):
-
-```php
-private const TEMPLATE_MAP = [
-    // relative to JPATH_SITE/components/com_comprofiler/plugin/user/
-    'plug_cbgroupjive/plugins/cbgroupjiveevents/templates/default/events.php' => [
-        'host', 'group', 'guests', 'description',
-    ],
-    'plug_cbgroupjive/plugins/cbgroupjiveevents/templates/default/module.php' => [
-        'host', 'group', 'guests', 'description',
-    ],
-    'plug_cbgroupjive/plugins/cbgroupjiveevents/templates/default/activity.php' => [
-        'host', 'group', 'guests', 'description',
-    ],
-    'plug_cbactivity/templates/default/activity/core/group/event.php' => [
-        'host', 'group', 'guests', 'description',
-    ],
-    'plug_cbgroupjive/plugins/cbgroupjiveevents/templates/default/attending.php' => [
-        // no target classes — attending list shows user names only
-        // included in map so Verify reports its file existence status
-    ],
-];
-```
-
-At verification time, the handler resolves each key to its class value (e.g., `'host'` → `$this->params->get('class_host', 'gjGroupEventHost')`) and searches the file for that string.
-
-#### Why File Scanning Over HTTP Request
-
-An earlier design used an HTTP GET to a public page to check rendered output. File scanning is superior because:
-
-- No real events needed in the database
-- No configurable test URL to maintain
-- No HTTP loopback issues (blocked by firewall, host resolution, etc.)
-- Directly answers "do the templates still use these CSS classes?"
-- Faster (reads 5 small files vs. rendering a full page)
-- The only scenario it wouldn't catch is if the class strings exist in the file but the surrounding HTML structure changes (e.g. `<div>` becomes `<span>`). This is extremely unlikely given CB's stable template patterns, and if it happens the regex simply won't match — causing no harm, just info leakage, same as a missing class.
-
-#### Edge Cases
-
-- If a template file is missing (CB plugin uninstalled or relocated), the verification reports it as an error with the missing file path.
-- The admin warning only appears when viewing the admin panel, not on the frontend, to avoid confusing regular users.
+This approach tests what actually matters (is the sanitized HTML correct for guests?) rather than whether CSS class strings exist in template source files.
 
 ### Performance Notes
 
@@ -490,8 +383,7 @@ Install plugin, enable it, configure parameters, run Verify & Acknowledge, confi
 ## Implementation Status (2026-02-16)
 
 - [x] Step 1 implemented: plugin files scaffolded (`cbgjvisibility.xml`, `services/`, `src/`, language files).
-- [x] Step 2 implemented: `onAfterRender` guest stripping with admin-first branching, marker fast-path, selector params, and nesting-aware description removal.
-- [x] Step 3 implemented: version mismatch warning and `onAjaxCbgjvisibility` verification endpoint with admin/ACL/CSRF checks and verified-version persistence.
-- [x] Step 4 partially implemented in code only: compatibility UI and verification transport are in place; runtime verification against live site remains pending.
+- [x] Step 2 implemented: `onAfterRender` guest stripping with marker fast-path, selector params, and nesting-aware description removal.
+- [x] Step 3 replaced (v0.2.0): compatibility verification system removed; replaced with live sanitization test (AJAX + CLI).
 - [x] Step 5 implemented: `Makefile`, update XML, and packaging paths added.
 - [ ] Step 6 intentionally not executed: DDEV installation/configuration/functional environment checks were skipped because test environment is unavailable.

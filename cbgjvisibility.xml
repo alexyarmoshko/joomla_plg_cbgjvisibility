@@ -6,7 +6,7 @@
     <copyright>(C) 2026 Yak Shaver https://www.kayakshaver.com</copyright>
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>me@kayakshaver.com</authorEmail>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <description>PLG_SYSTEM_CBGJVISIBILITY_XML_DESCRIPTION</description>
     <namespace path="src">YakShaver\Plugin\System\Cbgjvisibility</namespace>
     <files>
@@ -77,22 +77,19 @@
                 <field name="element_description" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_ELEMENT_DESCRIPTION_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_ELEMENT_DESCRIPTION_DESC" default="div" />
                 <field name="class_description" type="text" label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_CLASS_DESCRIPTION_LABEL" description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_CLASS_DESCRIPTION_DESC" default="gjGroupEventDescription" />
             </fieldset>
-            <fieldset name="compatibility" label="PLG_SYSTEM_CBGJVISIBILITY_FIELDSET_COMPATIBILITY">
+            <fieldset name="testing" label="PLG_SYSTEM_CBGJVISIBILITY_FIELDSET_TESTING">
                 <field
-                    name="compatibility_note"
+                    name="test_note"
                     type="note"
-                    label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_COMPATIBILITY_NOTE_LABEL"
-                    description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_COMPATIBILITY_NOTE_DESC"
+                    label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_TEST_NOTE_LABEL"
+                    description="PLG_SYSTEM_CBGJVISIBILITY_FIELD_TEST_NOTE_DESC"
                     class="alert alert-info"
                 />
                 <field
-                    name="verify_button"
-                    type="Verify"
-                    label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_VERIFY_LABEL"
+                    name="sanitization_test"
+                    type="SanitizationTest"
+                    label="PLG_SYSTEM_CBGJVISIBILITY_FIELD_TEST_LABEL"
                 />
-                <field name="verified_cbgroupjive_version" type="hidden" default="" />
-                <field name="verified_cbgroupjiveevents_version" type="hidden" default="" />
-                <field name="verified_cbactivity_version" type="hidden" default="" />
             </fieldset>
         </fields>
     </config>
