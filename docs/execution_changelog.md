@@ -58,7 +58,7 @@
   - New `src/Field/SanitizationTestField.php` — simple button + result display (~95 lines).
   - New Testing tab in plugin settings.
 - Added 12 new language strings for testing UI.
-- Updated README, execution plan, and CLAUDE.md.
+- Updated README and execution plan.
 - Bumped version to 0.2.0.
 
 ## 2026-02-17 (code review v1 fixes)
