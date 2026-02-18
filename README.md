@@ -1,4 +1,4 @@
-# joomla_plg_cbgjvisibility
+# Yak Shaver CB GJ Event Visibility
 
 Joomla 5 system plugin (`plg_system_cbgjvisibility`) that hides selected CB GroupJive event details from guest users by post-processing rendered HTML in `onAfterRender`.
 
