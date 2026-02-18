@@ -56,7 +56,7 @@ final class SanitizationTestField extends FormField
         Factory::getApplication()->getDocument()->getWebAssetManager()
             ->registerAndUseScript(
                 'plg_system_cbgjvisibility.sanitization_test',
-                'plg_system_cbgjvisibility/js/sanitization-test.js',
+                'plg_system_cbgjvisibility/sanitization-test.js',
                 [],
                 ['defer' => true],
                 ['core']
