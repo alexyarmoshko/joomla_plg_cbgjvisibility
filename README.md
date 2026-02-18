@@ -49,4 +49,4 @@ Plugin settings are split into:
 
 - The HTML stripping assumes target `class="..."` attributes use double quotes in CB templates.
 - Description block stripping uses nesting-aware parsing to handle nested `<div>` content.
-- Only the CB GroupJive Events module (`module.php`) is confirmed guest-visible; `events.php` is also sanitized as a safety net.
+- 
