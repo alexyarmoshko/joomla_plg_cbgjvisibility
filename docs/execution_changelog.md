@@ -1,5 +1,15 @@
 # Execution Changelog
 
+## 2026-02-18 (code review v3 fixes)
+
+- Fixed Low (#5): moved `SanitizationTestField` inline JavaScript to external asset `media/js/sanitization-test.js` loaded via Joomla WebAssetManager.
+- Fixed Low (#5): replaced legacy `.well` wrapper with Bootstrap 5 `card card-body` container in admin Testing tab UI.
+- Fixed Low (#5): removed inline `<pre style="...">` and switched to Bootstrap utility classes.
+- Added `<media>` section in `cbgjvisibility.xml` to package/install the new admin JavaScript asset.
+- Updated `Makefile` `PLUGIN_FILES` to include `media/` so release ZIPs ship the new JS asset.
+- Updated `docs/execution_plan.md` repository layout and Makefile snippet to include `media/`.
+- Findings #1-#4 from `docs/code_review.v3.md` were already addressed in the current working tree; no extra code changes were required for those items.
+
 ## 2026-02-16
 
 - Implemented plugin scaffolding from the execution plan:
@@ -49,6 +59,23 @@
 - Added 12 new language strings for testing UI.
 - Updated README, execution plan, and CLAUDE.md.
 - Bumped version to 0.2.0.
+
+## 2026-02-17 (code review v1 fixes)
+
+- Fixed High: `fetchFrontPageAsGuest()` now strips `/administrator/` from `Uri::root()` to ensure it always fetches the public site root, even when called from admin context.
+- Fixed Low: sanitization test class check changed from substring `strpos()` to regex with `class="..."` attribute matching and word boundaries, preventing false positives from class names appearing in unrelated text/script contexts.
+- Fixed Low: README.md `RELEASE.md` path corrected to `docs/RELEASE.md`.
+- Fixed Medium: `execution_plan.md` cleaned up — removed references to the deleted compatibility verification system (Step 3, test matrix, success criteria, risks) and replaced with current sanitization test descriptions.
+- Skipped #2 (service provider constructor pattern): Joomla 5.3 official docs still use the same `new Plugin($dispatcher, $config)` pattern; not actionable yet.
+- Added maintenance mode detection: `fetchFrontPageAsGuest()` now returns HTTP status code; `runSanitizationTest()` checks for 503 and reports a clear "site offline" error instead of a misleading inconclusive result.
+
+## 2026-02-17 (code review v2 fixes)
+
+- Fixed High (#1): `fetchFrontPageAsGuest()` URL resolution hardened — now uses `parse_url()` to isolate the path component and strip `/administrator` safely, avoiding false matches in the domain name.
+- Fixed Medium (#2): service provider now uses `new Cbgjvisibility($config)` + `setDispatcher()` instead of passing `DispatcherInterface` as constructor arg. The old pattern triggers `E_USER_DEPRECATED` and will break in Joomla 7.0 (CMSPlugin will drop `DispatcherAwareInterface`).
+- Fixed Medium (#3): `execution_plan.md` — corrected "General + Compatibility tabs" to "General, Selectors, and Testing tabs"; replaced "Verify button" reference with Test Sanitization; fixed "AJAX + CLI" to "AJAX from admin Testing tab".
+- Fixed Low (#4): replaced hard-coded English fallback `"No event data found on page."` in `SanitizationTestField.php` JS with the localized `PLG_SYSTEM_CBGJVISIBILITY_TEST_INCONCLUSIVE` language string.
+- Fixed Low (#5): removed `verify_peer => false` / `verify_peer_name => false` from the `file_get_contents` SSL stream context fallback, restoring default peer verification.
 
 ## Deferred
 

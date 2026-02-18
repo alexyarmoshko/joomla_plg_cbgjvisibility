@@ -14,7 +14,7 @@ GITHUB_OWNER ?= alexyarmoshko
 GITHUB_REPO ?= joomla_plg_cbgjvisibility
 GITHUB_REF ?= $(PLUGIN_VERSION)
 
-PLUGIN_FILES := cbgjvisibility.xml LICENSE services/ src/ language/
+PLUGIN_FILES := cbgjvisibility.xml LICENSE services/ src/ language/ media/
 
 .PHONY: dist info clean
 

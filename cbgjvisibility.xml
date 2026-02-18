@@ -9,6 +9,9 @@
     <version>0.2.0</version>
     <description>PLG_SYSTEM_CBGJVISIBILITY_XML_DESCRIPTION</description>
     <namespace path="src">YakShaver\Plugin\System\Cbgjvisibility</namespace>
+    <media destination="plg_system_cbgjvisibility" folder="media">
+        <folder>js</folder>
+    </media>
     <files>
         <folder plugin="cbgjvisibility">services</folder>
         <folder>src</folder>

@@ -48,6 +48,9 @@ plg_cbgjvisibility/
 ├── src/
 │   └── Extension/
 │       └── Cbgjvisibility.php         # Plugin class (onAfterRender + validation)
+├── media/
+│   └── js/
+│       └── sanitization-test.js       # Admin Testing tab JS (AJAX button behavior)
 ├── services/
 │   └── provider.php                 # Joomla DI service provider
 ├── cbgjvisibility.xml                 # Manifest with config params
@@ -136,7 +139,7 @@ Each target is a self-contained `<div>` with a unique class. Use non-greedy matc
 
 The `s` (DOTALL) flag handles multi-line content. The element tag and class name are read from plugin parameters, with defaults matching current CB markup. For simple targets (Host, Group, Guests) that don't contain nested elements of the same type, non-greedy matching is safe.
 
-**Assumption**: The pattern expects `class` as an attribute with double quotes (e.g., `<div class="...gjGroupEventHost...">`). This matches CB's consistent output across all 5 templates. If a future CB version changes attribute quoting or order, the regex will silently fail (no match = info leakage, no breakage), and the Verify button will still detect the class strings in the source files, alerting the admin.
+**Assumption**: The pattern expects `class` as an attribute with double quotes (e.g., `<div class="...gjGroupEventHost...">`). This matches CB's consistent output across all 5 templates. If a future CB version changes attribute quoting or order, the regex will silently fail (no match = info leakage, no breakage), and the Test Sanitization button will detect the classes still present in guest-rendered HTML, alerting the admin.
 
 For `gjGroupEventDescription`, the content includes nested divs (cbMoreLess), so a nesting-aware PHP function is used instead of regex: find the opening tag, count element nesting depth, and find the matching closing tag. This is more robust than regex for nested elements and works regardless of the configured element type.
 
@@ -207,7 +210,7 @@ GITHUB_REPO ?= joomla_plg_cbgjvisibility
 GITHUB_REF ?= $(PLUGIN_VERSION)
 
 # Files/dirs to include in the ZIP (plugin installable content only)
-PLUGIN_FILES := cbgjvisibility.xml services/ src/ language/
+PLUGIN_FILES := cbgjvisibility.xml services/ src/ language/ media/
 
 .PHONY: dist info clean
 
@@ -304,7 +307,7 @@ Requires a Unix-like shell with: `awk`, `zip`, `sha256sum` (Linux) or `shasum` (
 
 Create Joomla 5 namespace-based plugin structure:
 
-- `cbgjvisibility.xml` manifest with namespace, service provider, and config params (General + Compatibility tabs)
+- `cbgjvisibility.xml` manifest with namespace, service provider, and config params (General, Selectors, and Testing tabs)
 - `services/provider.php` for Joomla DI
 - `src/Extension/Cbgjvisibility.php` with empty plugin class extending `CMSPlugin`
 - `language/en-GB/plg_system_cbgjvisibility.ini` with all language strings
@@ -317,16 +320,12 @@ Create Joomla 5 namespace-based plugin structure:
 - Apply replacements to response body
 - Use nesting-aware PHP function for `gjGroupEventDescription` (nested divs)
 
-### Step 3: Implement compatibility self-check
+### Step 3: Implement sanitization test (replaced in v0.2.0)
 
-- Version detection: query `#__comprofiler_plugin` for `cbgroupjive`, `cbgroupjiveevents`, and `cbactivity` versions
-- Admin warning: inject `enqueueMessage` when installed versions differ from verified versions
-- AJAX verification endpoint (`onAjaxCbgjvisibility`):
-  - Read all 5 template files via `file_get_contents()`
-  - Check each file for its expected CSS class strings
-  - Return per-file found/missing report as JSON
-- Plugin config Compatibility tab: display versions, Verify & Acknowledge button with JS handler
-- Save verified versions on successful verification
+> **Note**: The original compatibility verification system (version tracking, template file scanning, admin warnings) was removed in v0.2.0 and replaced with a live sanitization test.
+
+- AJAX endpoint (`onAjaxCbgjvisibility`): fetches front page as guest, checks marker string presence and hidden CSS class absence
+- Plugin config Testing tab: "Test Sanitization" button triggers AJAX call and displays per-class PASS/FAIL results
 
 ### Step 4: Test
 
@@ -342,13 +341,10 @@ Create Joomla 5 namespace-based plugin structure:
 | CB Activity stream — guest | Host, Group, Guests hidden |
 | Attending page — guest | No change (no target CSS classes in this template); user names visible via CB's own access control |
 | Non-HTML response (JSON, AJAX) | Plugin does not process; response unchanged |
-| Admin panel pages — guest not applicable | No stripping; version check runs |
-| Admin panel — version mismatch | Warning message displayed |
-| Admin panel — versions match | No warning |
-| Verify button — all classes present | Success message; versions saved |
-| Verify button — class missing | Warning with file/class details; versions NOT saved |
-| Verify button — template file missing | Error with file path |
-| First install (no verified versions) | Version mismatch warning on first admin page load |
+| Admin panel — Test Sanitization (marker found, classes absent) | All PASS |
+| Admin panel — Test Sanitization (marker found, class present) | Per-class FAIL shown |
+| Admin panel — Test Sanitization (marker not found) | Inconclusive result |
+| Admin panel — Test Sanitization (fetch fails) | Error message displayed |
 
 ### Step 5: Create installable ZIP package
 
@@ -358,17 +354,17 @@ Create Joomla 5 namespace-based plugin structure:
 
 ### Step 6: Install and configure on DDEV site
 
-Install plugin, enable it, configure parameters, run Verify & Acknowledge, confirm all 5 rendering-path behaviors (4 stripped + attending unchanged).
+Install plugin, enable it, configure parameters, run Test Sanitization from the Testing tab, confirm all 5 rendering-path behaviors (4 stripped + attending unchanged).
 
 ## Risks and Mitigations
 
 | Risk | Likelihood | Mitigation |
 | - | - | - |
-| CB renames CSS classes in a future update | Low (stable for years) | Compatibility self-check detects version change and warns admin; Verify button confirms classes are still present; admin can update class names and element types via Selectors tab without code changes |
+| CB renames CSS classes in a future update | Low (stable for years) | Test Sanitization detects missing classes via live guest-page check; admin can update class names and element types via Selectors tab without code changes |
 | Nested div matching fails for description block | Medium | Use PHP nesting-aware function instead of pure regex for that one case |
 | Plugin fires on non-page responses (JSON, AJAX) | Low | Content-Type check in early exit guards against this |
 | Performance on very large pages | Negligible | Regex on <1MB strings is sub-millisecond |
-| Template file missing or relocated | Low | Verify handler reports missing files with full path; admin alerted to investigate |
+| Template file missing or relocated | Low | Test Sanitization detects when expected classes are absent from rendered output; admin alerted to investigate |
 
 ## Success Criteria
 
@@ -376,14 +372,12 @@ Install plugin, enable it, configure parameters, run Verify & Acknowledge, confi
 - [ ] Logged-in users see all event details as before
 - [ ] Plugin survives a CB GroupJive test update without intervention
 - [ ] Plugin configurable via Joomla admin (Extensions > Plugins)
-- [ ] Admin sees a warning after CB version change until verification is re-run
-- [ ] Verify & Acknowledge button correctly reports CSS class presence/absence
-- [ ] First-time install prompts for verification
+- [ ] Test Sanitization button correctly reports per-class PASS/FAIL for guest-rendered HTML
 
 ## Implementation Status (2026-02-16)
 
 - [x] Step 1 implemented: plugin files scaffolded (`cbgjvisibility.xml`, `services/`, `src/`, language files).
 - [x] Step 2 implemented: `onAfterRender` guest stripping with marker fast-path, selector params, and nesting-aware description removal.
-- [x] Step 3 replaced (v0.2.0): compatibility verification system removed; replaced with live sanitization test (AJAX + CLI).
+- [x] Step 3 replaced (v0.2.0): compatibility verification system removed; replaced with live sanitization test (AJAX from admin Testing tab).
 - [x] Step 5 implemented: `Makefile`, update XML, and packaging paths added.
 - [ ] Step 6 intentionally not executed: DDEV installation/configuration/functional environment checks were skipped because test environment is unavailable.

@@ -107,12 +107,17 @@ final class Cbgjvisibility extends CMSPlugin implements SubscriberInterface
             return ['error' => Text::_('JINVALID_TOKEN')];
         }
 
-        $html = $this->fetchFrontPageAsGuest();
+        $response = $this->fetchFrontPageAsGuest();
 
-        if ($html === null) {
+        if ($response === null) {
             return ['error' => Text::_('PLG_SYSTEM_CBGJVISIBILITY_TEST_FETCH_FAILED')];
         }
 
+        if ($response['httpCode'] === 503) {
+            return ['error' => Text::_('PLG_SYSTEM_CBGJVISIBILITY_TEST_SITE_OFFLINE')];
+        }
+
+        $html = $response['html'];
         $markerString = trim((string) $this->params->get('marker_string', 'gjGroupEvent'));
 
         if ($markerString !== '' && strpos($html, $markerString) === false) {
@@ -138,7 +143,7 @@ final class Cbgjvisibility extends CMSPlugin implements SubscriberInterface
                 continue;
             }
 
-            $found = strpos($html, $className) !== false;
+            $found = preg_match('/\bclass="[^"]*\b' . preg_quote($className, '/') . '\b/', $html) === 1;
 
             $checks[] = [
                 'key' => $key,
@@ -161,9 +166,25 @@ final class Cbgjvisibility extends CMSPlugin implements SubscriberInterface
         ];
     }
 
-    private function fetchFrontPageAsGuest(): ?string
+    /**
+     * @return array{html: string, httpCode: int}|null
+     */
+    private function fetchFrontPageAsGuest(): ?array
     {
         $url = Uri::root();
+
+        // In admin context, Uri::root() may resolve to include /administrator/
+        // in the path; strip it to always target the public site root.
+        $parsed = parse_url($url);
+        $path = $parsed['path'] ?? '/';
+
+        if (preg_match('#/administrator(?:/|$)#i', $path)) {
+            $path = preg_replace('#/administrator(?:/|$)#i', '/', $path);
+            $scheme = $parsed['scheme'] ?? 'https';
+            $host = $parsed['host'] ?? 'localhost';
+            $port = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+            $url = $scheme . '://' . $host . $port . $path;
+        }
 
         if (function_exists('curl_init')) {
             $ch = curl_init($url);
@@ -184,7 +205,7 @@ final class Cbgjvisibility extends CMSPlugin implements SubscriberInterface
                 return null;
             }
 
-            return (string) $html;
+            return ['html' => (string) $html, 'httpCode' => $httpCode];
         }
 
         $context = stream_context_create([
@@ -193,15 +214,26 @@ final class Cbgjvisibility extends CMSPlugin implements SubscriberInterface
                 'timeout' => 15,
                 'header' => "Cookie:\r\nUser-Agent: CbgjvisibilitySanitizationTest/1.0\r\n",
             ],
-            'ssl' => [
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-            ],
         ]);
 
         $html = @file_get_contents($url, false, $context);
 
-        return $html === false ? null : $html;
+        if ($html === false) {
+            return null;
+        }
+
+        // Extract HTTP status code from response headers.
+        $httpCode = 200;
+
+        if (!empty($http_response_header)) {
+            foreach ($http_response_header as $header) {
+                if (preg_match('#^HTTP/\S+\s+(\d{3})#i', $header, $m)) {
+                    $httpCode = (int) $m[1];
+                }
+            }
+        }
+
+        return ['html' => $html, 'httpCode' => $httpCode];
     }
 
     private function stripConfiguredBlocks(string $body): string
