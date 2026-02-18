@@ -201,7 +201,7 @@ final class Cbgjvisibility extends CMSPlugin implements SubscriberInterface
             $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
 
-            if ($html === false || $httpCode < 200 || $httpCode >= 400) {
+            if ($html === false || $httpCode < 200 || ($httpCode >= 400 && $httpCode !== 503)) {
                 return null;
             }
 
@@ -212,6 +212,7 @@ final class Cbgjvisibility extends CMSPlugin implements SubscriberInterface
             'http' => [
                 'method' => 'GET',
                 'timeout' => 15,
+                'ignore_errors' => true,
                 'header' => "Cookie:\r\nUser-Agent: CbgjvisibilitySanitizationTest/1.0\r\n",
             ],
         ]);
@@ -231,6 +232,10 @@ final class Cbgjvisibility extends CMSPlugin implements SubscriberInterface
                     $httpCode = (int) $m[1];
                 }
             }
+        }
+
+        if ($httpCode < 200 || ($httpCode >= 400 && $httpCode !== 503)) {
+            return null;
         }
 
         return ['html' => $html, 'httpCode' => $httpCode];
