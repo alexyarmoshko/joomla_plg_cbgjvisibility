@@ -2,6 +2,7 @@
 
 ## 2026-02-18 (code review v3 fixes)
 
+- Fixed follow-up: corrected WebAsset script URI from `plg_system_cbgjvisibility/js/sanitization-test.js` to `plg_system_cbgjvisibility/sanitization-test.js` so Joomla resolves the installed media path correctly and the Testing tab button handler binds.
 - Fixed Low (#5): moved `SanitizationTestField` inline JavaScript to external asset `media/js/sanitization-test.js` loaded via Joomla WebAssetManager.
 - Fixed Low (#5): replaced legacy `.well` wrapper with Bootstrap 5 `card card-body` container in admin Testing tab UI.
 - Fixed Low (#5): removed inline `<pre style="...">` and switched to Bootstrap utility classes.
