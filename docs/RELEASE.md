@@ -18,7 +18,7 @@
 ### Changed
 
 - Plugin class reduced from ~635 to ~335 lines.
-- Updated documentation (README, CLAUDE.md, execution plan, changelog).
+- Updated documentation (README, execution plan, changelog).
 
 ## [0.1.0] - 2026-02-16
 
