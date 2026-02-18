@@ -11,6 +11,7 @@ namespace YakShaver\Plugin\System\Cbgjvisibility\Field;
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Factory;
 use Joomla\CMS\Form\FormField;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\PluginHelper;
@@ -23,83 +24,45 @@ final class SanitizationTestField extends FormField
 
     protected function getInput(): string
     {
-        $buttonId = $this->id . '_button';
-        $outputId = $this->id . '_output';
         $pluginEnabled = PluginHelper::isEnabled('system', 'cbgjvisibility');
         $url = Route::_(
             'index.php?option=com_ajax&plugin=cbgjvisibility&group=system&format=json&' . Session::getFormToken() . '=1',
             false
         );
 
+        $this->registerAssets();
+
         $buttonLabel = Text::_('PLG_SYSTEM_CBGJVISIBILITY_FIELD_TEST_BUTTON');
-        $runningLabel = Text::_('PLG_SYSTEM_CBGJVISIBILITY_TEST_RUNNING');
         $pluginDisabledNote = Text::_('PLG_SYSTEM_CBGJVISIBILITY_TEST_PLUGIN_DISABLED');
-        $ajaxUrl = json_encode($url, JSON_UNESCAPED_SLASHES);
-        $runningLabelJs = json_encode($runningLabel, JSON_UNESCAPED_SLASHES);
+        $warning = '';
+
+        if (!$pluginEnabled) {
+            $warning = '<div class="alert alert-warning">' . htmlspecialchars($pluginDisabledNote, ENT_QUOTES, 'UTF-8') . '</div>';
+        }
 
         return '
-            <div class="well">
-                ' . (!$pluginEnabled ? '<div class="alert alert-warning">' . htmlspecialchars($pluginDisabledNote, ENT_QUOTES, 'UTF-8') . '</div>' : '') . '
-                <button id="' . htmlspecialchars($buttonId, ENT_QUOTES, 'UTF-8') . '" type="button" class="btn btn-primary" ' . (!$pluginEnabled ? 'disabled="disabled"' : '') . '>
+            <div class="card card-body js-cbgjvisibility-sanitization-test" data-cbgjvisibility-url="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">
+                ' . $warning . '
+                <button type="button" class="btn btn-primary js-cbgjvisibility-test-button" ' . (!$pluginEnabled ? 'disabled="disabled"' : '') . '>
                     ' . htmlspecialchars($buttonLabel, ENT_QUOTES, 'UTF-8') . '
                 </button>
-                <pre id="' . htmlspecialchars($outputId, ENT_QUOTES, 'UTF-8') . '" style="max-height: 260px; overflow: auto; margin-top: 8px;"></pre>
+                <pre class="border rounded p-2 mt-3 bg-light overflow-auto js-cbgjvisibility-test-output" aria-live="polite"></pre>
             </div>
-            <script>
-                (() => {
-                    const button = document.getElementById(' . json_encode($buttonId) . ');
-                    const output = document.getElementById(' . json_encode($outputId) . ');
-
-                    if (!button || !output) {
-                        return;
-                    }
-
-                    button.addEventListener("click", async () => {
-                        button.disabled = true;
-                        output.textContent = ' . $runningLabelJs . ';
-
-                        try {
-                            const response = await fetch(' . $ajaxUrl . ', {
-                                credentials: "same-origin",
-                                method: "GET",
-                                headers: { "Accept": "application/json" }
-                            });
-                            const json = await response.json();
-                            const payload = Array.isArray(json.data)
-                                ? (json.data.length > 0 ? json.data[0] : null)
-                                : (json.data ?? null);
-
-                            if (!payload) {
-                                output.textContent = JSON.stringify(json, null, 2);
-                                return;
-                            }
-
-                            if (payload.error) {
-                                output.textContent = payload.error;
-                                return;
-                            }
-
-                            let lines = [];
-
-                            if (payload.marker_found === false) {
-                                lines.push(payload.message || "No event data found on page.");
-                            } else {
-                                lines.push(payload.message || "");
-                                lines.push("");
-                                (payload.checks || []).forEach((c) => {
-                                    lines.push("[" + c.status + "] " + c.class);
-                                });
-                            }
-
-                            output.textContent = lines.join("\\n");
-                        } catch (error) {
-                            output.textContent = String(error);
-                        } finally {
-                            button.disabled = false;
-                        }
-                    });
-                })();
-            </script>
         ';
+    }
+
+    private function registerAssets(): void
+    {
+        Factory::getApplication()->getDocument()->getWebAssetManager()
+            ->registerAndUseScript(
+                'plg_system_cbgjvisibility.sanitization_test',
+                'plg_system_cbgjvisibility/js/sanitization-test.js',
+                [],
+                ['defer' => true],
+                ['core']
+            );
+
+        Text::script('PLG_SYSTEM_CBGJVISIBILITY_TEST_RUNNING', true);
+        Text::script('PLG_SYSTEM_CBGJVISIBILITY_TEST_INCONCLUSIVE', true);
     }
 }

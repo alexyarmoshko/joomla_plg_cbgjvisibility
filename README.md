@@ -15,12 +15,13 @@ Joomla 5 system plugin (`plg_system_cbgjvisibility`) that hides selected CB Grou
 - `services/provider.php`: Joomla DI registration for the plugin class.
 - `src/Extension/Cbgjvisibility.php`: Main plugin logic.
 - `src/Field/SanitizationTestField.php`: Admin custom field with Test Sanitization button.
+- `media/js/sanitization-test.js`: Admin Testing tab behavior (AJAX sanitization test UI).
 - `language/en-GB/`: Plugin language strings.
 - `plg_system_cbgjvisibility.update.xml`: Joomla update server descriptor.
 - `Makefile`: Packaging and update XML automation.
 - `docs/execution_plan.md`: Implementation plan.
 - `docs/execution_changelog.md`: Implementation progress log.
-- `RELEASE.md`: Release notes.
+- `docs/RELEASE.md`: Release notes.
 
 ## Build commands
 
