@@ -7,9 +7,9 @@
         <type>plugin</type>
         <folder>system</folder>
         <client>site</client>
-        <version>0.2.0</version>
+        <version>1.0.2</version>
         <downloads>
-            <downloadurl type="full" format="zip">https://github.com/alexyarmoshko/joomla_plg_cbgjvisibility/releases/download/0.2.0/plg_system_cbgjvisibility-v0-2-0.zip</downloadurl>
+            <downloadurl type="full" format="zip">https://github.com/alexyarmoshko/joomla_plg_cbgjvisibility/releases/download/1.0.2/plg_system_cbgjvisibility-v1-0-2.zip</downloadurl>
         </downloads>
         <tags>
             <tag>stable</tag>

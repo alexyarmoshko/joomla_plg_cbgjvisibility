@@ -46,7 +46,7 @@
     - blocks saving verified snapshots when any tracked version remains unavailable.
   - Fixed form overwrite issue: after successful Verify, JS now writes resolved versions into hidden params inputs so a subsequent Joomla "Save" does not clear verified versions.
 
-## 2026-02-16 (v0.2.0)
+## 2026-02-16 (v1.0.2)
 
 - Removed compatibility verification system (~50% of codebase):
   - Deleted `src/Field/VerifyField.php` (337 lines).
@@ -59,7 +59,7 @@
   - New Testing tab in plugin settings.
 - Added 12 new language strings for testing UI.
 - Updated README and execution plan.
-- Bumped version to 0.2.0.
+- Bumped version to 1.0.2.
 
 ## 2026-02-17 (code review v1 fixes)
 

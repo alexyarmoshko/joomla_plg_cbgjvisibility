@@ -6,7 +6,7 @@
     <copyright>(C) 2026 Yak Shaver https://www.kayakshaver.com</copyright>
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>me@kayakshaver.com</authorEmail>
-    <version>0.2.0</version>
+    <version>1.0.2</version>
     <description>PLG_SYSTEM_CBGJVISIBILITY_XML_DESCRIPTION</description>
     <namespace path="src">YakShaver\Plugin\System\Cbgjvisibility</namespace>
     <media destination="plg_system_cbgjvisibility" folder="media">
