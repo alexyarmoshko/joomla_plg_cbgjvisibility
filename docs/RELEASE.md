@@ -1,6 +1,13 @@
 # Release Notes
 
-## [1.0.2] - 2026-02-16
+## 1.0.3 (2026-10-11)
+
+### Added
+
+- Update server support: Joomla offers future versions under **System → Update → Extensions**. Sites on 1.0.2 or earlier need to install 1.0.3 manually once.
+- Reproducible release package.
+
+## 1.0.2 (2026-02-16)
 
 ### Removed
 
@@ -20,7 +27,7 @@
 - Plugin class reduced from ~635 to ~335 lines.
 - Updated documentation (README, execution plan, changelog).
 
-## [0.1.0] - 2026-02-16
+## 0.1.0 (2026-02-16)
 
 ### Added
 
