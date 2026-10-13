@@ -25,7 +25,7 @@
 ### Changed
 
 - Plugin class reduced from ~635 to ~335 lines.
-- Updated documentation (README, execution plan, changelog).
+- Updated README.
 
 ## 0.1.0 (2026-02-16)
 
